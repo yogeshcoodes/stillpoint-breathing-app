@@ -108,21 +108,27 @@
     speechVoices = window.speechSynthesis.getVoices();
     const selection = voiceSelect?.value || loadPreference('speechVoice', 'auto-male');
     if (selection && selection !== 'auto-male') {
-      const explicitlySelected = speechVoices.find(voice => voice.voiceURI === selection);
+      const explicitlySelected = speechVoices.find(voice => voice.voiceURI === selection && likelyMaleVoice(voice));
       if (explicitlySelected) return explicitlySelected;
     }
     const englishVoices = speechVoices.filter(voice => /^en([_-]|$)/i.test(voice.lang || ''));
-    return englishVoices.find(likelyMaleVoice) || englishVoices.find(voice => /natural|neural/i.test(voice.name || '')) || englishVoices[0] || speechVoices.find(likelyMaleVoice) || speechVoices[0] || null;
+    return englishVoices.find(likelyMaleVoice) || speechVoices.find(likelyMaleVoice) || null;
   }
 
   function speak(message, interrupt = true, onFinished = null) {
     if (!voiceEnabled() || !speechAvailable) return false;
     try {
+      const voice = getPreferredSpeechVoice();
+      if (!voice) {
+        audioSupportNote.textContent = voiceSelect.value === 'auto-male'
+          ? 'No clearly male-sounding device voice was found. Choose a voice explicitly or leave spoken guidance off.'
+          : 'The selected voice is not ready yet. Try again after the device voice list loads.';
+        return false;
+      }
       if (interrupt) window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(message);
-      const voice = getPreferredSpeechVoice();
       utterance.lang = voice?.lang || 'en-IN';
-      if (voice) utterance.voice = voice;
+      utterance.voice = voice;
       utterance.rate = 0.86;
       utterance.pitch = 0.9;
       utterance.volume = 0.82;
@@ -151,14 +157,13 @@
       return; // Keep a previously chosen voice URI until the asynchronous voice list arrives.
     }
     const preferredEnglish = speechVoices.filter(voice => /^en([_-]|$)/i.test(voice.lang || ''));
-    const choices = (preferredEnglish.length ? preferredEnglish : speechVoices).slice().sort((a, b) => {
-      const maleDifference = Number(likelyMaleVoice(b)) - Number(likelyMaleVoice(a));
-      return maleDifference || (a.name || '').localeCompare(b.name || '');
-    });
+    const choices = (preferredEnglish.length ? preferredEnglish : speechVoices)
+      .filter(likelyMaleVoice)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     voiceSelect.replaceChildren();
     const automatic = document.createElement('option');
     automatic.value = 'auto-male';
-    automatic.textContent = 'Auto · prefer male-sounding';
+    automatic.textContent = 'Auto · male voice only';
     voiceSelect.appendChild(automatic);
     choices.forEach(voice => {
       const option = document.createElement('option');
@@ -170,7 +175,7 @@
     if (choices.length && savedSelection !== voiceSelect.value) savePreference('speechVoice', voiceSelect.value);
     if (voiceEnabled() && !choices.some(likelyMaleVoice)) {
       audioSupportNote.textContent = choices.length
-        ? 'This device has no clearly identifiable male-sounding voice; Auto uses its best available English voice.'
+        ? 'No clearly male-sounding voice was found. Auto will not use another voice; choose one explicitly if you want spoken cues.'
         : 'Voice list is loading. Start a session once, then check the voice options again.';
     }
   }
@@ -413,7 +418,7 @@
     phaseWord.textContent = 'Ready';
     phaseHint.textContent = practices[activePractice].duration;
     updateProgress(); setRunningUI();
-    audioSupportNote.textContent = 'Audio begins when you start a session.';
+    audioSupportNote.textContent = 'Soft cue sounds begin with a session. Spoken guidance stays off until enabled.';
     announce('Session reset. Start when you are ready.');
   }
 
@@ -594,12 +599,19 @@
   if (themeMeta) themeMeta.setAttribute('content', root.dataset.theme === 'night' ? '#242621' : '#f0eee5');
   const schemeMeta = $('meta[name="color-scheme"]');
   if (schemeMeta) schemeMeta.setAttribute('content', root.dataset.theme === 'night' ? 'dark' : 'light');
-  setSwitch(voiceToggle, loadPreference('voice', 'true') !== 'false');
+  setSwitch(voiceToggle, loadPreference('voice', 'false') === 'true');
   setSwitch(soundToggle, loadPreference('sound', 'true') !== 'false');
   if (speechAvailable) {
     populateSpeechVoices();
     window.speechSynthesis.addEventListener?.('voiceschanged', populateSpeechVoices);
     window.setTimeout(populateSpeechVoices, 250);
+  }
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(error => {
+        console.error('Stillpoint offline caching could not be enabled.', error);
+      });
+    });
   }
   if (!speechAvailable) {
     setSwitch(voiceToggle, false); voiceToggle.disabled = true;
@@ -641,8 +653,9 @@
     }
     setSwitch(voiceToggle, true);
     savePreference('voice', 'true');
-    speak('Hello. Breathe in gently, then let your breath out slowly. Keep the breath comfortable and natural.');
-    audioSupportNote.textContent = 'Voice preview started. Voice options depend on this device and browser.';
+    if (speak('Hello. Breathe in gently, then let your breath out slowly. Keep the breath comfortable and natural.')) {
+      audioSupportNote.textContent = 'Voice preview started. Voice options depend on this device and browser.';
+    }
   });
   $('#testSoundButton').addEventListener('click', () => {
     const context = getAudioContext();

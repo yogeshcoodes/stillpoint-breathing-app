@@ -5,16 +5,14 @@ A responsive, low-glare breathing and grounding app built with plain HTML, CSS, 
 ## Run it
 
 1. Extract the folder.
-2. Open `index.html` in Brave, Chrome, Firefox, or Edge.
-3. Click **Begin session** once to allow the browser to start audio.
-
-For a local server (optional), run this from the project folder:
+2. Run a local server from the project folder to enable offline caching:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit `http://localhost:8000`.
+3. Visit `http://localhost:8000` in Brave, Chrome, Firefox, or Edge. The app shell is cached for later visits and offline use. Service workers require localhost or HTTPS; opening `index.html` directly still works, but does not enable offline caching.
+4. Begin a session normally; spoken guidance stays off until you turn it on.
 
 ## Included
 
@@ -23,15 +21,15 @@ Then visit `http://localhost:8000`.
 - A posture-first introduction. The spoken guidance finishes before a 5.5-second quiet pause; only then does the first inhale and session timer begin. You can pause or reset during this preparation stage.
 - A custom rhythm editor with inhale/exhale timing from 3–10 seconds and optional hold/rest timing from 0–4 seconds. Inputs are numeric, rounded, and clamped to those ranges in JavaScript; values are never evaluated as code.
 - 1, 3, 5, and 10 minute sessions, pause/resume/reset, elapsed time, remaining time, and progress bar.
-- Spoken cues using the browser's Speech Synthesis API with automatic preference for an English male-sounding voice when identifiable, a voice picker, and a preview button. Actual available voices depend on browser/device settings.
+- Optional spoken cues using the browser's Speech Synthesis API. The voice picker only offers identifiable male-sounding voices, and Auto stays silent when the device has none. Actual available voices depend on browser/device settings.
 - Synthesized cue tones using Web Audio API; no audio files or libraries to download.
 - Warm night and warm light themes with explicit CSS colors to reduce unwanted browser auto-darkening, including in Brave. Dropdowns, numeric fields, focus states, options, and scrollbars have matching styles.
 - A four-step 30-second grounding prompt, responsive layouts, keyboard focus states, gentle state transitions, and reduced-motion setting.
-- Theme and sound/voice preferences persist locally. Session history or personal wellbeing data is not stored.
+- Theme and sound/voice preferences persist locally. The app shell (HTML, CSS, and JavaScript) is cached by the service worker for offline use on localhost or HTTPS. Session history or personal wellbeing data is not stored.
 
 ## Voice availability
 
-There is no practical way to guarantee a free, unlimited, always-online male TTS voice from a static frontend. This app uses the voices made available by the user's browser/operating system, which avoids API keys and third-party service quotas. Some devices may provide only a small voice list or no clearly male-sounding voice.
+There is no practical way to guarantee a free, unlimited, always-online male TTS voice from a static frontend. This app uses the voices made available by the user's browser/operating system, which avoids API keys and third-party service quotas. Some devices may provide only a small voice list or no clearly male-sounding voice; the picker then shows no voice choices, and Auto stays silent rather than selecting an unknown or female-sounding voice.
 
 ## Note
 
