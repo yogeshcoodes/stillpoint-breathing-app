@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#242621">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="A quiet space for guided breathing, grounding, and mindful pauses.">
+  <title>Stillpoint — A quieter moment</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23242621'/%3E%3Ccircle cx='20' cy='20' r='10' fill='none' stroke='%23c5c9a7' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23d49b7c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="Stillpoint home">
+        <span class="brand-mark" aria-hidden="true"><span></span><i></i></span>
+        <span class="brand-name">stillpoint<span class="brand-dot">.</span></span>
+      </a>
+      <div class="topbar-right">
+        <span class="status-note"><span class="status-dot"></span> A little space, just for you</span>
+        <button class="icon-button theme-button" id="themeToggle" type="button" aria-label="Switch to warm light theme" title="Change appearance">
+          <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path></svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 15.4A8.5 8.5 0 0 1 8.6 3.7 8.6 8.6 0 1 0 20.3 15.4Z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="home">
+      <section class="intro-row" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> YOUR MOMENT OF RESET</p>
+          <h1 id="page-title">Come back to<br><em>your breath.</em></h1>
+          <p class="intro-text">Nothing to fix. Nowhere to be. Just a gentle way to return to the present, one breath at a time.</p>
+        </div>
+        <div class="daily-note" aria-label="A gentle reminder">
+          <span class="note-spark" aria-hidden="true">✳</span>
+          <p>“You can begin<br>again, right here.”</p>
+          <span class="note-caption">A NOTE TO SELF</span>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="Guided breathing session">
+        <div class="session-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">GUIDED PRACTICE</p>
+              <h2>Find your rhythm</h2>
+            </div>
+            <span class="session-tag"><span class="tag-dot"></span><span id="sessionState">Ready when you are</span></span>
+          </div>
+
+          <div class="practice-tabs" role="group" aria-label="Choose a breathing exercise">
+            <button class="practice-tab active" type="button" data-practice="settle" aria-pressed="true">
+              <span class="tab-icon icon-leaf" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 4c-8 0-13 3-13 9a5 5 0 0 0 5 5c6 0 8-7 8-14Z"></path><path d="M4 21c3-6 6-9 12-13"></path></svg></span>
+              <span class="tab-label">Settle</span><span class="tab-time">7 in · 7 out</span>
+            </button>
+            <button class="practice-tab" type="button" data-practice="balance" aria-pressed="false">
+              <span class="tab-icon icon-circle" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path></svg></span>
+              <span class="tab-label">Balance</span><span class="tab-time">7 in · 7 out</span>
+            </button>
+            <button class="practice-tab" type="button" data-practice="box" aria-pressed="false">
+              <span class="tab-icon icon-box" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"></rect><path d="M5 10h14M10 5v14"></path></svg></span>
+              <span class="tab-label">Box breath</span><span class="tab-time">7 · 4 · 7 · 4</span>
+            </button>
+            <button class="practice-tab" type="button" data-practice="release" aria-pressed="false">
+              <span class="tab-icon icon-cloud" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17h10a4 4 0 0 0 .3-8A6 6 0 0 0 6 10a3.5 3.5 0 0 0 1 7Z"></path><path d="M8 20h8"></path></svg></span>
+              <span class="tab-label">Let go</span><span class="tab-time">4 in · 7 out</span>
+            </button>
+            <button class="practice-tab custom-practice-tab" type="button" data-practice="custom" aria-pressed="false">
+              <span class="tab-icon icon-custom" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h4l2.2-5 3.6 10 2.2-5H20"></path></svg></span>
+              <span class="tab-label">Custom</span><span class="tab-time">Your pace</span>
+            </button>
+          </div>
+          <div class="practice-explainer" id="practiceExplainer" aria-live="polite">
+            <span class="explainer-label">WHAT IT DOES</span>
+            <p id="practiceDescription">A slightly longer exhale gives you a slower, steady rhythm. Keep it easy; there is no need to empty your lungs.</p>
+          </div>
+
+          <details class="rhythm-settings" id="rhythmSettings">
+            <summary><span class="rhythm-summary-icon" aria-hidden="true">↔</span><span class="rhythm-summary-copy"><strong>Customize breathing rhythm</strong><small>Choose a gentle pace that feels natural</small></span><span class="summary-chevron" aria-hidden="true">⌄</span></summary>
+            <form class="rhythm-form" id="rhythmForm" novalidate>
+              <div class="rhythm-fields">
+                <label class="timing-field" for="customInhale"><span>Inhale</span><span class="number-wrap"><input id="customInhale" name="inhale" type="number" inputmode="numeric" min="3" max="10" step="1" value="7" required aria-describedby="rhythmHelp"><small>sec</small></span></label>
+                <label class="timing-field" for="customHold"><span>Hold <small>(optional)</small></span><span class="number-wrap"><input id="customHold" name="hold" type="number" inputmode="numeric" min="0" max="4" step="1" value="0" required aria-describedby="rhythmHelp"><small>sec</small></span></label>
+                <label class="timing-field" for="customExhale"><span>Exhale</span><span class="number-wrap"><input id="customExhale" name="exhale" type="number" inputmode="numeric" min="3" max="10" step="1" value="7" required aria-describedby="rhythmHelp"><small>sec</small></span></label>
+                <label class="timing-field" for="customRest"><span>Rest <small>(optional)</small></span><span class="number-wrap"><input id="customRest" name="rest" type="number" inputmode="numeric" min="0" max="4" step="1" value="0" required aria-describedby="rhythmHelp"><small>sec</small></span></label>
+              </div>
+              <p class="rhythm-help" id="rhythmHelp">Inhale/exhale: 3–10 sec. Holds/rests: 0–4 sec. Zero turns that pause off. Never force your breath.</p>
+              <p class="rhythm-error" id="rhythmError" role="status" aria-live="polite" hidden></p>
+              <button class="apply-rhythm" id="applyRhythmButton" type="submit">Apply custom rhythm <span aria-hidden="true">→</span></button>
+            </form>
+          </details>
+
+          <div class="breathing-stage" id="breathingStage">
+            <div class="stage-topline"><span class="stage-label"><span class="live-dot"></span> <span id="practiceName">THE SETTLING BREATH</span></span><span class="stage-length" id="stageLength">5 MINUTES</span></div>
+            <div class="breath-visual" id="breathVisual" aria-hidden="true">
+              <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
+              <div class="breath-halo"></div>
+              <div class="breath-orb" id="breathOrb"><div class="orb-texture"></div><span class="orb-center-mark"></span></div>
+              <div class="orb-caption"><span id="phaseWord">Ready</span><span class="orb-caption-sub" id="phaseHint">Start whenever you feel ready</span></div>
+            </div>
+            <div class="session-controls">
+              <div class="duration-control" aria-label="Session duration">
+                <span class="control-label">LENGTH</span>
+                <div class="duration-options" role="group" aria-label="Choose session length">
+                  <button type="button" class="duration-option" data-minutes="1" aria-pressed="false">1m</button>
+                  <button type="button" class="duration-option" data-minutes="3" aria-pressed="false">3m</button>
+                  <button type="button" class="duration-option active" data-minutes="5" aria-pressed="true">5m</button>
+                  <button type="button" class="duration-option" data-minutes="10" aria-pressed="false">10m</button>
+                </div>
+              </div>
+              <div class="primary-controls">
+                <button type="button" class="start-button" id="startButton"><span class="button-play" id="startIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 6 10 6-10 6z"></path></svg></span><span id="startLabel">Begin session</span></button>
+                <button type="button" class="reset-button" id="resetButton" aria-label="Reset session" title="Reset session"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2.6 6.4M3 4v7h7"></path></svg></button>
+              </div>
+            </div>
+            <div class="progress-area" aria-label="Session progress">
+              <div class="progress-meta"><span id="elapsedTime">00:00 elapsed</span><span id="remainingTime">05:00 remaining</span></div>
+              <div class="progress-track" id="progressTrack" role="progressbar" aria-label="Session progress" aria-valuemin="0" aria-valuemax="300" aria-valuenow="0"><span id="progressFill"></span></div>
+            </div>
+          </div>
+          <p class="session-footnote"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 7.7 7.5 9.5 4.3-1.8 7.5-5 7.5-9.5V6L12 3Z"></path><path d="m9 12 2 2 4-4"></path></svg> Keep it comfortable. Your breath should never feel forced. Skip any hold that creates strain.</p>
+        </div>
+
+        <aside class="side-column">
+          <section class="sound-panel panel" aria-labelledby="sound-heading">
+            <div class="side-heading">
+              <span class="side-icon sound-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4Z"></path><path d="M16 9a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12"></path></svg></span>
+              <div><p class="section-kicker">YOUR SOUNDSPACE</p><h2 id="sound-heading">Gentle guidance</h2></div>
+            </div>
+            <p class="side-description">Let the cues lead you, even with your eyes closed.</p>
+            <div class="setting-row">
+              <div class="setting-copy"><span class="setting-title">Spoken guidance</span><span class="setting-subtitle">A calm voice names each phase</span></div>
+              <button class="switch is-on" id="voiceToggle" type="button" role="switch" aria-checked="true" aria-label="Spoken guidance"><span></span></button>
+            </div>
+            <div class="setting-row setting-row-last">
+              <div class="setting-copy"><span class="setting-title">Soft cue sounds</span><span class="setting-subtitle">A gentle tone at each change</span></div>
+              <button class="switch is-on" id="soundToggle" type="button" role="switch" aria-checked="true" aria-label="Soft cue sounds"><span></span></button>
+            </div>
+            <div class="voice-style-row">
+              <label for="voiceSelect">Spoken voice</label>
+              <div class="select-wrap"><select id="voiceSelect" aria-label="Choose spoken voice"><option value="auto-male">Auto · prefer male-sounding</option></select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></div>
+            </div>
+            <button class="test-sound test-voice" id="testVoiceButton" type="button">Preview voice</button>
+            <div class="sound-style-row">
+              <label for="soundStyle">Cue style</label>
+              <div class="select-wrap"><select id="soundStyle" aria-label="Cue sound style"><option value="bowl">Soft bowl</option><option value="wood">Wood chime</option><option value="drop">Water drop</option></select><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></div>
+            </div>
+            <button class="test-sound" id="testSoundButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z"></path><path d="M17 9a5 5 0 0 1 0 6"></path></svg> Preview cue</button>
+            <p class="audio-support-note" id="audioSupportNote" aria-live="polite">Audio begins after you start your first session.</p>
+          </section>
+
+          <section class="grounding-panel panel" aria-labelledby="grounding-heading">
+            <div class="grounding-top"><span class="grounding-number">01</span><span class="grounding-line"></span><span class="grounding-icon" aria-hidden="true">✳</span></div>
+            <p class="section-kicker">IF YOUR MIND IS RACING</p>
+            <h2 id="grounding-heading">Come back<br>to <em>right now.</em></h2>
+            <p class="grounding-copy">You don't need to empty your mind. Just notice what's here, without needing to change it.</p>
+            <button type="button" class="grounding-button" id="groundingButton">Try a grounding reset <span aria-hidden="true">↗</span></button>
+          </section>
+
+          <div class="safety-note"><span class="safety-mark" aria-hidden="true">i</span><p>This is a calming aid, not a medical treatment. If breathing feels uncomfortable or you feel dizzy, stop and breathe normally.</p></div>
+        </aside>
+      </section>
+
+      <footer class="footer"><span class="footer-brand">stillpoint<span class="brand-dot">.</span></span><span>Made for the moments that need a little softness.</span><button type="button" id="reduceMotionButton" class="text-button" aria-pressed="false">Reduce motion</button></footer>
+    </main>
+  </div>
+
+  <div class="grounding-overlay" id="groundingOverlay" hidden>
+    <div class="grounding-modal" role="dialog" aria-modal="true" aria-labelledby="groundingModalTitle">
+      <button class="modal-close icon-button" id="closeGrounding" type="button" aria-label="Close grounding reset"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
+      <p class="eyebrow"><span class="eyebrow-line"></span> A SMALL RESET</p>
+      <h2 id="groundingModalTitle">Notice this moment.</h2>
+      <p class="modal-intro">No need to change anything. Just gently notice what is already around you.</p>
+      <div class="grounding-steps" id="groundingSteps" aria-live="polite">
+        <div class="ground-step active"><span>01</span><p>Name <strong>5 things</strong> you can see.</p></div>
+        <div class="ground-step"><span>02</span><p>Notice <strong>4 things</strong> you can feel.</p></div>
+        <div class="ground-step"><span>03</span><p>Listen for <strong>3 sounds</strong> around you.</p></div>
+        <div class="ground-step"><span>04</span><p>Take one easy, unforced breath.</p></div>
+      </div>
+      <div class="modal-actions"><span id="groundingStepCount">Step 1 of 4</span><button type="button" id="nextGroundingStep" class="start-button">Continue <span aria-hidden="true">→</span></button></div>
+    </div>
+  </div>
+  <div class="sr-only" id="announcer" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
