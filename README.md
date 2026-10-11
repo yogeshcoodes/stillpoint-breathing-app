@@ -21,7 +21,7 @@ python -m http.server 8000
 - A posture-first introduction. The spoken guidance finishes before a 5.5-second quiet pause; only then does the first inhale and session timer begin. You can pause or reset during this preparation stage.
 - A custom rhythm editor with inhale/exhale timing from 3–10 seconds and optional hold/rest timing from 0–4 seconds. Inputs are numeric, rounded, and clamped to those ranges in JavaScript; values are never evaluated as code.
 - 1, 3, 5, and 10 minute sessions, pause/resume/reset, elapsed time, remaining time, and progress bar.
-- Optional spoken cues using the browser's Speech Synthesis API. The voice picker only offers identifiable male-sounding voices, and Auto stays silent when the device has none. Actual available voices depend on browser/device settings.
+- Optional spoken cues using the browser's Speech Synthesis API. Device voices load asynchronously; the picker keeps checking and updates when they become available. Auto prefers an identifiable male-sounding voice and stays silent if none is available; selecting another listed voice is explicit. Actual available voices depend on browser/device settings.
 - Synthesized cue tones using Web Audio API; no audio files or libraries to download.
 - Warm night and warm light themes with explicit CSS colors to reduce unwanted browser auto-darkening, including in Brave. Dropdowns, numeric fields, focus states, options, and scrollbars have matching styles.
 - A four-step 30-second grounding prompt, responsive layouts, keyboard focus states, gentle state transitions, and reduced-motion setting.

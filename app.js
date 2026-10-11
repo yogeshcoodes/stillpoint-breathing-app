@@ -73,6 +73,7 @@
   let activeNoiseSource = null;
   let speechAvailable = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
   let speechVoices = [];
+  let speechVoiceRetryId = null;
   let groundingIndex = 0;
   let groundingWasRunning = false;
   let groundingTimer = null;
@@ -108,7 +109,7 @@
     speechVoices = window.speechSynthesis.getVoices();
     const selection = voiceSelect?.value || loadPreference('speechVoice', 'auto-male');
     if (selection && selection !== 'auto-male') {
-      const explicitlySelected = speechVoices.find(voice => voice.voiceURI === selection && likelyMaleVoice(voice));
+      const explicitlySelected = speechVoices.find(voice => voice.voiceURI === selection);
       if (explicitlySelected) return explicitlySelected;
     }
     const englishVoices = speechVoices.filter(voice => /^en([_-]|$)/i.test(voice.lang || ''));
@@ -120,9 +121,11 @@
     try {
       const voice = getPreferredSpeechVoice();
       if (!voice) {
-        audioSupportNote.textContent = voiceSelect.value === 'auto-male'
-          ? 'No clearly male-sounding device voice was found. Choose a voice explicitly or leave spoken guidance off.'
-          : 'The selected voice is not ready yet. Try again after the device voice list loads.';
+        audioSupportNote.textContent = !speechVoices.length
+          ? 'The device voice list is still loading. Available voices will appear here automatically.'
+          : voiceSelect.value === 'auto-male'
+            ? 'No clearly male-sounding voice was found. Choose a listed voice explicitly or leave spoken guidance off.'
+            : 'The selected voice is not available yet. Choose another voice or wait for the device voice list to finish loading.';
         return false;
       }
       if (interrupt) window.speechSynthesis.cancel();
@@ -151,19 +154,30 @@
     if (!speechVoices.length) {
       voiceSelect.replaceChildren();
       const loadingOption = document.createElement('option');
-      loadingOption.value = 'auto-male';
-      loadingOption.textContent = 'Loading device voices…';
+      loadingOption.value = savedSelection;
+      loadingOption.textContent = savedSelection === 'auto-male' ? 'Loading device voices…' : 'Loading saved device voice…';
       voiceSelect.appendChild(loadingOption);
-      return; // Keep a previously chosen voice URI until the asynchronous voice list arrives.
+      audioSupportNote.textContent = 'Loading voices from your device. This can take a moment; the list will update automatically.';
+      if (!document.hidden && speechVoiceRetryId === null) {
+        speechVoiceRetryId = window.setTimeout(() => {
+          speechVoiceRetryId = null;
+          populateSpeechVoices();
+        }, 1500);
+      }
+      return;
+    }
+    if (speechVoiceRetryId !== null) {
+      window.clearTimeout(speechVoiceRetryId);
+      speechVoiceRetryId = null;
     }
     const preferredEnglish = speechVoices.filter(voice => /^en([_-]|$)/i.test(voice.lang || ''));
     const choices = (preferredEnglish.length ? preferredEnglish : speechVoices)
-      .filter(likelyMaleVoice)
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      .slice()
+      .sort((a, b) => Number(likelyMaleVoice(b)) - Number(likelyMaleVoice(a)) || (a.name || '').localeCompare(b.name || ''));
     voiceSelect.replaceChildren();
     const automatic = document.createElement('option');
     automatic.value = 'auto-male';
-    automatic.textContent = 'Auto · male voice only';
+    automatic.textContent = 'Auto · prefer male-sounding';
     voiceSelect.appendChild(automatic);
     choices.forEach(voice => {
       const option = document.createElement('option');
@@ -171,12 +185,23 @@
       option.textContent = `${voice.name}${voice.lang ? ` · ${voice.lang}` : ''}`;
       voiceSelect.appendChild(option);
     });
-    voiceSelect.value = choices.some(voice => voice.voiceURI === savedSelection) ? savedSelection : 'auto-male';
-    if (choices.length && savedSelection !== voiceSelect.value) savePreference('speechVoice', voiceSelect.value);
+    if (savedSelection !== 'auto-male' && !choices.some(voice => voice.voiceURI === savedSelection)) {
+      const waitingOption = document.createElement('option');
+      waitingOption.value = savedSelection;
+      waitingOption.textContent = 'Waiting for saved device voice…';
+      voiceSelect.appendChild(waitingOption);
+    }
+    voiceSelect.value = savedSelection;
+    if (voiceSelect.value !== savedSelection) {
+      voiceSelect.value = 'auto-male';
+      savePreference('speechVoice', 'auto-male');
+    }
     if (voiceEnabled() && !choices.some(likelyMaleVoice)) {
-      audioSupportNote.textContent = choices.length
-        ? 'No clearly male-sounding voice was found. Auto will not use another voice; choose one explicitly if you want spoken cues.'
-        : 'Voice list is loading. Start a session once, then check the voice options again.';
+      audioSupportNote.textContent = 'No clearly male-sounding voice was found. Auto stays silent; choose a listed voice explicitly if you want spoken cues.';
+    } else if (audioSupportNote.textContent.startsWith('Loading voices from your device.')) {
+      audioSupportNote.textContent = voiceEnabled()
+        ? 'Device voices are ready. Spoken guidance is on.'
+        : 'Device voices are ready. Spoken guidance stays off until enabled.';
     }
   }
 
@@ -603,8 +628,22 @@
   setSwitch(soundToggle, loadPreference('sound', 'true') !== 'false');
   if (speechAvailable) {
     populateSpeechVoices();
-    window.speechSynthesis.addEventListener?.('voiceschanged', populateSpeechVoices);
-    window.setTimeout(populateSpeechVoices, 250);
+    if (window.speechSynthesis.addEventListener) {
+      window.speechSynthesis.addEventListener('voiceschanged', populateSpeechVoices);
+    } else {
+      window.speechSynthesis.onvoiceschanged = populateSpeechVoices;
+    }
+    window.addEventListener('focus', populateSpeechVoices);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (speechVoiceRetryId !== null) {
+          window.clearTimeout(speechVoiceRetryId);
+          speechVoiceRetryId = null;
+        }
+      } else {
+        populateSpeechVoices();
+      }
+    });
   }
   if ('serviceWorker' in navigator && window.isSecureContext) {
     window.addEventListener('load', () => {
@@ -615,6 +654,8 @@
   }
   if (!speechAvailable) {
     setSwitch(voiceToggle, false); voiceToggle.disabled = true;
+    voiceSelect.replaceChildren(new Option('Spoken voices are not supported', ''));
+    voiceSelect.disabled = true;
     audioSupportNote.textContent = 'Voice guidance is not supported here. Gentle cue sounds are still available.';
   }
   const reducedByOS = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -688,6 +729,7 @@
   window.addEventListener('pagehide', () => {
     if (intervalId) clearInterval(intervalId);
     clearPreparationTimers();
+    if (speechVoiceRetryId !== null) window.clearTimeout(speechVoiceRetryId);
     stopAudio();
     if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
   });

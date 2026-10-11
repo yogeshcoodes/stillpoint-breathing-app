@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'stillpoint-shell-v2';
+const CACHE_NAME = 'stillpoint-shell-v3';
 const APP_SHELL = ['./', './index.html', './styles.css', './app.js'];
 
 self.addEventListener('install', event => {
@@ -21,6 +21,15 @@ self.addEventListener('activate', event => {
   );
 });
 
+async function fetchAndCache(request) {
+  const response = await fetch(request);
+  if (response.ok) {
+    const copy = response.clone();
+    caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+  }
+  return response;
+}
+
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
@@ -28,23 +37,14 @@ self.addEventListener('fetch', event => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match(request)
-        .then(cached => cached || caches.match('./index.html'))
-        .then(cached => cached || fetch(request))
+      fetchAndCache(request).catch(() =>
+        caches.match(request).then(cached => cached || caches.match('./index.html'))
+      )
     );
     return;
   }
 
   event.respondWith(
-    caches.match(request).then(cached => {
-      if (cached) return cached;
-      return fetch(request).then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-        }
-        return response;
-      });
-    })
+    fetchAndCache(request).catch(() => caches.match(request))
   );
 });
